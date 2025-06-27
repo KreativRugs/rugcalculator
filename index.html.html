@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rug Cost Calculator | Kreativ Rugs</title>
+  <meta name="description" content="Easily calculate the cost of your custom rug based on size and price per unit. Supports centimeters, inches, and feet."/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap">
+  <style>
+    :root {
+      --primary: #5e3d18;
+      --accent: #bfa46b;
+      --bg: #f9f7f3;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--primary);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      box-shadow: var(--shadow);
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      max-width: 400px;
+      width: 100%;
+      margin: 2rem 1rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+    h2 {
+      font-size: 1.15rem;
+      color: var(--accent);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-weight: normal;
+    }
+    label {
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+      display: block;
+      font-weight: 600;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.65rem;
+      margin-bottom: 1.1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.7rem;
+    }
+    button:hover {
+      background: #a2884b;
+    }
+    .result {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 1.5rem;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+    }
+    .area-info {
+      text-align: center;
+      color: #888;
+      font-size: 1rem;
+      margin-top: 0.2rem;
+      margin-bottom: 0.8rem;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem 0.6rem;
+        max-width: 98vw;
+      }
+      h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧺 Rug Cost Calculator</h1>
+    <h2>by Kreativ Rugs</h2>
+    <form id="rugForm" autocomplete="off" onsubmit="event.preventDefault(); calculateCost();">
+      <label for="unit">Measurement unit:</label>
+      <select id="unit" onchange="updateLabels()">
+        <option value="cm">Centimeters (cm)</option>
+        <option value="in">Inches (in)</option>
+        <option value="ft">Feet (ft)</option>
+      </select>
+
+      <label for="width">Width:</label>
+      <input type="number" id="width" step="0.01" min="0.01" placeholder="Enter width" required />
+
+      <label for="length">Length:</label>
+      <input type="number" id="length" step="0.01" min="0.01" placeholder="Enter length" required />
+
+      <label for="priceUnit">Pricing unit:</label>
+      <select id="priceUnit" onchange="updateLabels()">
+        <option value="cm">Square Centimeter (cm²)</option>
+        <option value="in">Square Inch (in²)</option>
+        <option value="ft">Square Foot (ft²)</option>
+      </select>
+
+      <label for="price" id="price-label">Price per unit (₱):</label>
+      <input type="number" id="price" step="0.01" min="0.01" placeholder="Enter price" required />
+
+      <button type="submit">Calculate</button>
+    </form>
+    <div class="area-info" id="areaResult"></div>
+    <div class="result">Total Cost: <span id="result">₱0.00</span></div>
+  </div>
+
+  <script>
+    const unitToMeters = {
+      cm: 0.01,
+      in: 0.0254,
+      ft: 0.3048
+    };
+
+    function updateLabels() {
+      const priceUnit = document.getElementById("priceUnit").value;
+      const unitNames = {
+        cm: "square centimeter",
+        in: "square inch",
+        ft: "square foot"
+      };
+      document.getElementById("price-label").textContent =
+        `Price per ${unitNames[priceUnit]} (₱):`;
+    }
+
+    function calculateCost() {
+      const width = parseFloat(document.getElementById('width').value);
+      const length = parseFloat(document.getElementById('length').value);
+      const price = parseFloat(document.getElementById('price').value);
+      const measureUnit = document.getElementById('unit').value;
+      const pricingUnit = document.getElementById('priceUnit').value;
+
+      if (
+        isNaN(width) || isNaN(length) || isNaN(price) ||
+        width <= 0 || length <= 0 || price <= 0
+      ) {
+        alert("Please enter valid, positive numbers.");
+        return;
+      }
+
+      const widthMeters = width * unitToMeters[measureUnit];
+      const lengthMeters = length * unitToMeters[measureUnit];
+      const areaMeters = widthMeters * lengthMeters;
+
+      // Area in pricing unit
+      const conversionFactor = Math.pow(1 / unitToMeters[pricingUnit], 2);
+      const convertedArea = areaMeters * conversionFactor;
+
+      const totalCost = convertedArea * price;
+      document.getElementById('result').textContent = `₱${totalCost.toFixed(2)}`;
+
+      // Show the area in the pricing unit
+      let unitLabel = '';
+      if (pricingUnit === 'cm') unitLabel = 'cm²';
+      else if (pricingUnit === 'in') unitLabel = 'in²';
+      else unitLabel = 'ft²';
+
+      document.getElementById('areaResult').textContent =
+        `Area: ${convertedArea.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${unitLabel}`;
+    }
+
+    updateLabels(); // Initialize on load
+  </script>
+</body>
+</html>
